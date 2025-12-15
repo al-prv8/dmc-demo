@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import DmcDemo from "@/components/DmcDemo";
 import StatsSearch from "@/components/StatsSearch";
 import Segments from "@/components/Segments";
 import WhyUs from "@/components/WhyUs";
@@ -21,6 +22,7 @@ export default function Home() {
 
       <Header />
       <Hero />
+      <DmcDemo />
       <StatsSearch />
       <Segments />
       <WhyUs />
