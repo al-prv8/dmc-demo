@@ -55,7 +55,7 @@ export default function Hero() {
             <div className="relative z-10 text-center px-6 max-w-5xl mx-auto mt-10">
                 {/* Year Watermark */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[12rem] font-bold text-white/[0.03] select-none pointer-events-none tracking-tighter">
-                    2025
+                    2026
                 </div>
 
                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-white mb-6 drop-shadow-2xl">

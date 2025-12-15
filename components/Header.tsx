@@ -1,61 +1,99 @@
 "use client";
 
-import { ArrowRight, Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import Link from "next/link";
 
 export default function Header() {
     return (
-        <nav className="fixed top-0 w-full z-50 glass-panel h-20 border-b-0">
-            <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    {/* Logo */}
-                    <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-amber-600 rounded-lg flex items-center justify-center text-black font-bold text-xs shadow-lg shadow-orange-500/20">
-                        <span className="transform -rotate-12">L</span>
+        <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+            <div
+                className="w-full max-w-4xl border rounded-full px-6 py-3 border-white/10"
+                style={{
+                    background:
+                        "linear-gradient(180deg, rgba(14,16,26,0.55), rgba(14,16,26,0.35)) padding-box, linear-gradient(120deg, rgba(255,255,255,0.35), rgba(255,255,255,0.08)) border-box",
+                    border: "1px solid transparent",
+                    backdropFilter: "blur(16px) saturate(120%)",
+                    WebkitBackdropFilter: "blur(16px) saturate(120%)",
+                    boxShadow:
+                        "0 10px 30px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)",
+                }}
+            >
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        {/* Logo */}
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-amber-600 rounded-lg flex items-center justify-center text-black font-bold text-xs shadow-lg shadow-orange-500/20">
+                                <span className="transform -rotate-12">L</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-semibold tracking-tight text-white/90 leading-none">
+                                    LIBERTY
+                                </span>
+                                <span className="text-[10px] text-zinc-400 uppercase tracking-widest hidden sm:block">
+                                    International
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-sm font-semibold tracking-tight text-white leading-none">
-                            LIBERTY
-                        </span>
-                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest">
-                            International
-                        </span>
-                    </div>
-                </div>
 
-                <div className="hidden md:flex items-center gap-8">
-                    <Link
-                        href="#"
-                        className="text-xs font-medium text-white hover:text-orange-400 transition-colors"
-                    >
-                        Destinations
-                    </Link>
-                    <Link
-                        href="#"
-                        className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-                    >
-                        Segments
-                    </Link>
-                    <Link
-                        href="#"
-                        className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-                    >
-                        About Us
-                    </Link>
-                    <Link
-                        href="#"
-                        className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-                    >
-                        Blog
-                    </Link>
-                </div>
+                    <ul className="hidden md:flex items-center gap-1 text-sm font-medium text-white/60">
+                        <li>
+                            <Link
+                                href="#"
+                                className="transition-colors duration-300 rounded-full py-2 px-4 hover:text-white hover:bg-white/5 block"
+                            >
+                                Destinations
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="#"
+                                className="transition-colors duration-300 hover:text-white hover:bg-white/5 rounded-full py-2 px-4 block"
+                            >
+                                Segments
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="#"
+                                className="transition-colors duration-300 rounded-full py-2 px-4 hover:text-white hover:bg-white/5 block"
+                            >
+                                About Us
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="#"
+                                className="transition-colors duration-300 rounded-full py-2 px-4 hover:text-white hover:bg-white/5 block"
+                            >
+                                Blog
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="#"
+                                className="transition-colors duration-300 rounded-full py-2 px-4 hover:text-white hover:bg-white/5 block"
+                            >
+                                Contact
+                            </Link>
+                        </li>
+                    </ul>
 
-                <div className="flex items-center gap-4">
-                    <button className="hidden md:flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all cursor-pointer">
-                        <span>Contact</span>
-                        <ArrowRight className="w-3 h-3" />
-                    </button>
-                    <div className="md:hidden text-white cursor-pointer">
-                        <Menu className="w-6 h-6" />
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                        <button
+                            className="inline-flex md:hidden p-2 rounded-full transition-all duration-300 border hover:bg-white/5 border-white/5 cursor-pointer"
+                            style={{ background: "rgba(255, 255, 255, 0.02)" }}
+                            aria-label="Menu"
+                        >
+                            <Menu className="w-5 h-5 text-white/70 stroke-[1.5]" />
+                        </button>
+                        <button
+                            className="hidden md:inline-flex p-2 rounded-full transition-all duration-300 border hover:bg-white/5 border-white/5 cursor-pointer"
+                            style={{ background: "rgba(255, 255, 255, 0.02)" }}
+                            aria-label="Account"
+                        >
+                            <User className="w-4 h-4 text-white/60 stroke-[1.5]" />
+                        </button>
                     </div>
                 </div>
             </div>
