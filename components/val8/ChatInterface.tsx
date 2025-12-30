@@ -1,173 +1,549 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { useVAL8 } from '@/context/VAL8Context';
-import { Send, Sparkles, Mic } from 'lucide-react';
-import { QuickReplyChips } from './QuickReplyChips';
-import { RecommendationCard } from './RecommendationCard';
-import { CategoryCard } from './CategoryCard';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Send, MapPin, Compass, Plane, Search, Mic } from 'lucide-react';
+import { useVal8, HotelCard } from './Val8Context';
+import { CardStack } from './CardStack';
+import { ChatCarousel } from './ChatCarousel';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import { TOP_ATTRACTIONS, UPCOMING_EVENTS } from '@/data/recommendations';
 
-// Shimmer loading card component
-function ShimmerCard() {
+const INITIAL_HOTELS: HotelCard[] = [
+  {
+    id: '1',
+    name: 'Atlantis The Royal',
+    location: 'Palm Jumeirah, Dubai',
+    price: '$850',
+    rating: 5.0,
+    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800',
+    tags: ['Ultra Luxury', 'Ocean View', 'Gastronomy']
+  },
+  {
+    id: '2',
+    name: 'Burj Al Arab',
+    location: 'Jumeirah Beach, Dubai',
+    price: '$1,200',
+    rating: 5.0,
+    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800',
+    tags: ['Iconic', 'Private Beach', 'Butler Service']
+  },
+  {
+    id: '3',
+    name: 'One&Only The Palm',
+    location: 'Palm Jumeirah, Dubai',
+    price: '$950',
+    rating: 4.9,
+    image: 'https://images.unsplash.com/photo-1571896349842-6e5c48dc52e3?auto=format&fit=crop&q=80&w=800',
+    tags: ['Secluded', 'Spa', 'Michelin Dining']
+  }
+];
+
+const MODERN_HOTELS: HotelCard[] = [
+  {
+    id: '4',
+    name: 'ME Dubai by Zaha Hadid',
+    location: 'Business Bay, Dubai',
+    price: '$450',
+    rating: 4.8,
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800',
+    tags: ['Design', 'Modern', 'City Views']
+  },
+  {
+    id: '5',
+    name: 'Address Sky View',
+    location: 'Downtown Dubai',
+    price: '$600',
+    rating: 4.9,
+    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&q=80&w=800',
+    tags: ['Infinity Pool', 'Skyline', 'Shopping']
+  }
+];
+
+export const ChatInterface: React.FC = () => {
+  const { chatHistory, addMessage, userIntent, setUserIntent, setSelectedHotel, setBookingState, isDemoMode, demoStep, setDemoStep, isExpanded, setDemoPhase, setView } = useVal8();
+  const { speak, stop } = useTextToSpeech();
+  const [inputValue, setInputValue] = useState('');
+  const [cards, setCards] = useState<HotelCard[]>(INITIAL_HOTELS);
+  const [hasShownCards, setHasShownCards] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Stop audio when widget closes or demo mode ends
+  useEffect(() => {
+    if (!isExpanded || !isDemoMode) {
+      stop();
+    }
+  }, [isExpanded, isDemoMode, stop]);
+
+  // Demo Script for Liberty International - Italy Trip
+  // Based on dmc demo.md specification
+  const DEMO_SCRIPT = [
+    {
+      userText: "10 days in Italy for two couples — Rome, Florence, Amalfi.",
+      aiResponse: "Perfect. I'll prepare a structured itinerary and coordinate execution with Liberty International's on-ground team.",
+      nextStep: 1
+    },
+    {
+      userText: "What does the routing look like?",
+      aiResponse: "This draft optimizes routing and flow: 3 nights Rome, 3 nights Florence, 4 nights Amalfi. Liberty International will finalize guides, access, and experiences.",
+      nextStep: 2
+    },
+    {
+      userText: "Can you show me hotels?",
+      aiResponse: "I've curated luxury properties for each city. Hotel de Russie in Rome, Four Seasons Firenze in Florence, and Belmond Caruso on the Amalfi Coast. Shall I proceed?",
+      nextStep: 3
+    },
+    {
+      userText: "Yes, proceed.",
+      aiResponse: "Rooms held. Liberty International has noted a recommendation: adjusting the Amalfi segment to avoid peak congestion in early June. Shall I apply this update?",
+      nextStep: 4
+    },
+    {
+      userText: "Yes, apply it.",
+      aiResponse: "Updated. I've also arranged private transfers between cities and a vintage Fiat 500 tour in Tuscany. Liberty International will manage all logistics.",
+      nextStep: 5
+    },
+    {
+      userText: "This looks great.",
+      aiResponse: "Liberty International will manage your journey end-to-end. I'll retain your preferences for future trips. Ready for confirmation?",
+      nextStep: 6
+    }
+  ];
+
+  const runDemoStep = async () => {
+    if (demoStep >= DEMO_SCRIPT.length) return;
+
+    setDemoPhase('typing'); // PHASE: TYPING
+    const step = DEMO_SCRIPT[demoStep];
+
+    // Simulate typing
+    let currentText = "";
+    for (let i = 0; i < step.userText.length; i++) {
+      await new Promise(r => setTimeout(r, 40));
+      currentText += step.userText[i];
+      setInputValue(currentText);
+    }
+
+    await new Promise(r => setTimeout(r, 400));
+
+    // "Send" the message
+    setInputValue('');
+    addMessage({
+      sender: 'user',
+      text: step.userText,
+      type: 'text'
+    });
+    setDemoPhase('processing'); // PHASE: PROCESSING (Card should appear now)
+
+    // AI Response (with slight delay for "thinking")
+    setTimeout(() => {
+      setDemoPhase('responding'); // PHASE: RESPONDING
+      addMessage({
+        sender: 'val8',
+        text: step.aiResponse,
+        type: 'text'
+      });
+
+      // Speak the response and advance ONLY when done
+      speak(step.aiResponse, () => {
+        // Small pause after speaking before next step triggers to simulate human reaction time
+        setTimeout(() => {
+          setDemoPhase('idle'); // PHASE: IDLE
+          if (step.nextStep !== undefined) {
+            setDemoStep(step.nextStep);
+          }
+        }, 500);
+      });
+
+    }, 1200);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory]);
+
+  // Auto-run demo steps (DISABLED for Manual Mode)
+  /*
+  useEffect(() => {
+    if (isDemoMode && demoStep < DEMO_SCRIPT.length) {
+      // Voice callback handles the "wait for speech", so we just need a tiny functional delay/debounce
+      // This timer essentially "starts" the next user action simulation
+      const delay = 300;
+
+      const timer = setTimeout(() => {
+        runDemoStep();
+      }, delay);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isDemoMode, demoStep]);
+  */
+
+  const handleSend = () => {
+    if (isDemoMode) {
+      // Manual Mode Logic
+      if (!inputValue.trim()) return;
+
+      const currentStep = DEMO_SCRIPT[demoStep];
+      // Robust matching: normalize both strings by removing non-alphanumeric chars and lowercase
+      const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      if (currentStep && normalize(inputValue).includes(normalize(currentStep.userText))) {
+        // Proceed with the demo step manually
+        setDemoPhase('typing'); // Briefly set typing to transition
+        setInputValue('');
+        addMessage({
+          sender: 'user',
+          text: currentStep.userText, // Use script text for consistency
+          type: 'text'
+        });
+        setDemoPhase('processing');
+
+        // Trigger AI Response Sequence
+        setTimeout(() => {
+          setDemoPhase('responding');
+          addMessage({
+            sender: 'val8',
+            text: currentStep.aiResponse,
+            type: 'text'
+          });
+
+          speak(currentStep.aiResponse, () => {
+            setTimeout(() => {
+              setDemoPhase('idle');
+              if (currentStep.nextStep !== undefined) {
+                setDemoStep(currentStep.nextStep);
+              }
+            }, 500);
+          });
+        }, 1000);
+      }
+      return;
+    }
+
+    if (!inputValue.trim()) return;
+
+    const userText = inputValue;
+    setInputValue('');
+
+    // Add user message
+    addMessage({
+      sender: 'user',
+      text: userText,
+      type: 'text',
+    });
+
+    // Handle "hi" or "hello"
+    if (['hi', 'hello', 'hey'].includes(userText.toLowerCase())) {
+      setTimeout(() => {
+        // 1. Greeting
+        addMessage({
+          sender: 'val8',
+          text: "Hello! Welcome to Val8. I can help you discover the best of Dubai.",
+          type: 'text'
+        });
+
+        // 2. Attractions
+        setTimeout(() => {
+          addMessage({
+            sender: 'val8',
+            text: "Explore Top Attractions",
+            type: 'card-stack',
+            cards: TOP_ATTRACTIONS
+          });
+        }, 800);
+
+        // 3. Events
+        setTimeout(() => {
+          addMessage({
+            sender: 'val8',
+            text: "Upcoming Events",
+            type: 'card-stack',
+            cards: UPCOMING_EVENTS
+          });
+        }, 1600);
+
+        // 4. See All Button
+        setTimeout(() => {
+          addMessage({
+            sender: 'val8',
+            text: "Would you like to explore more?",
+            type: 'options',
+            options: ['< > View All Cards'] // Using special label for the button
+          });
+        }, 2400);
+
+      }, 500);
+      return;
+    }
+
+    // FRAME 7: Modification Loop Logic
+    if (hasShownCards) {
+      // Simulate "thinking" and refining
+      setTimeout(() => {
+        addMessage({
+          sender: 'val8',
+          text: "Absolutely — here are a few more sleek, modern properties with exceptional views.",
+          type: 'text',
+        });
+
+        // Swap cards
+        setTimeout(() => {
+          setCards(MODERN_HOTELS);
+          addMessage({
+            sender: 'val8',
+            text: "I've updated the selection for you.",
+            type: 'card-stack',
+          });
+        }, 800);
+      }, 1000);
+      return;
+    }
+
+    // Default flow (Frame 4)
+    if (!userIntent) {
+      setUserIntent('planning');
+      setTimeout(() => {
+        addMessage({
+          sender: 'val8',
+          text: "Beautiful choice. Dubai is incredible in December — warm, glamorous, and full of great experiences. Are you looking for something more relaxing, adventure-focused, or social?",
+          type: 'options',
+          options: ['Relaxing', 'Adventure', 'Social', 'Not sure']
+        });
+      }, 1000);
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    if (isDemoMode) return; // Disable quick actions in demo mode
+
+    addMessage({
+      sender: 'user',
+      text: action,
+      type: 'text',
+    });
+    setUserIntent('planning');
+
+    // Logic to trigger Card Stack (Frame 5 -> 6)
+    if (['Relaxing', 'Adventure', 'Social'].includes(action)) {
+      setTimeout(() => {
+        addMessage({
+          sender: 'val8',
+          text: "Got it. I'll focus on ocean-view suites and peaceful stays. Here are a few options I curated for you.",
+          type: 'card-stack',
+        });
+        setHasShownCards(true);
+      }, 1500);
+    } else if (action === '< > View All Cards') {
+      // Handle "See All" action - for now, we can show a text message or trigger a dashboard view.
+      setTimeout(() => {
+        addMessage({
+          sender: 'val8',
+          text: "Here are all the recommendations.",
+          type: 'text'
+        });
+        setView('dashboard');
+      }, 500);
+    } else {
+      // Default response for other actions
+      setTimeout(() => {
+        addMessage({
+          sender: 'val8',
+          text: "Excellent. Where are you thinking of going?",
+          type: 'text',
+        });
+      }, 800);
+    }
+  };
+
+  const handleHotelSelect = (hotel: HotelCard) => {
+    setSelectedHotel(hotel);
+    setBookingState('summary');
+    addMessage({
+      sender: 'val8',
+      text: `Excellent choice. ${hotel.name} is stunning. I've prepared a trip summary for you.`,
+      type: 'text',
+    });
+  };
+
+  const handleRemoveCard = (id: string) => {
+    setCards(prev => prev.filter(c => c.id !== id));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent default since we handle it manually
+      handleSend();
+    }
+  };
+
+  // Frame 3: Welcome / Intent Capture
+  if (chatHistory.length === 0) {
     return (
-        <div className="rounded-xl overflow-hidden border border-[var(--glass-border)] bg-[var(--glass-bg)] animate-pulse">
-            {/* Image placeholder */}
-            <div className="h-32 bg-[var(--foreground)]/10" />
-            {/* Content */}
-            <div className="p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                    <div className="h-4 bg-[var(--foreground)]/10 rounded w-32" />
-                    <div className="h-4 bg-[var(--foreground)]/10 rounded w-10" />
-                </div>
-                <div className="flex gap-1">
-                    <div className="h-5 bg-[var(--foreground)]/10 rounded-full w-14" />
-                    <div className="h-5 bg-[var(--foreground)]/10 rounded-full w-16" />
-                    <div className="h-5 bg-[var(--foreground)]/10 rounded-full w-10" />
-                </div>
-                <div className="h-3 bg-[var(--foreground)]/10 rounded w-full" />
-                <div className="h-3 bg-[var(--foreground)]/10 rounded w-3/4" />
-                <div className="h-9 bg-[var(--foreground)]/10 rounded-lg w-full mt-2" />
-            </div>
+      <div className="h-full flex flex-col flex-1">
+        <div className="flex-1 flex flex-col justify-end px-8 pb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-3xl font-serif text-text-primary dark:text-white mb-8 leading-tight">
+              Where are you <br />
+              <span className="text-primary italic">thinking of going?</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            {[
+              { icon: MapPin, label: 'Plan a Trip', action: 'I want to plan a trip' },
+              { icon: Compass, label: 'Explore Ideas', action: 'Inspire me' },
+              { icon: Plane, label: 'Traveling Now', action: 'I am traveling now' },
+              { icon: Search, label: 'Just Browsing', action: 'Just browsing' },
+            ].map((item, i) => (
+              <motion.button
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                onClick={() => handleQuickAction(item.action)}
+                className="flex flex-col items-center justify-center p-4 bg-surface-alt dark:bg-white/5 hover:bg-surface dark:hover:bg-white/10 border border-border-subtle dark:border-white/5 hover:border-primary/30 rounded-xl transition-all group"
+              >
+                <item.icon className="w-5 h-5 text-text-muted dark:text-white/60 group-hover:text-primary mb-2 transition-colors" />
+                <span className="text-xs text-text-secondary dark:text-white/80 font-light">{item.label}</span>
+              </motion.button>
+            ))}
+          </div>
         </div>
+
+        {/* Input Area (Shared - Unified Style) */}
+        <div className="p-4 bg-surface dark:glass-card border-x-0 border-b-0">
+          <div className="relative">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Tell me anything..."
+              className="w-full bg-surface-alt dark:bg-black/20 text-text-primary dark:text-white placeholder-text-muted dark:placeholder-white/30 rounded-xl pl-4 pr-20 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-border-subtle dark:border-white/5 transition-all"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <button
+                type="button"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted dark:text-white/40 hover:text-primary hover:bg-primary/10 transition-colors"
+                title="Voice input"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleSend}
+                className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-surface hover:bg-primary-soft transition-colors"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     );
-}
+  }
 
-interface ChatInterfaceProps {
-    hiddenRecommendations?: boolean;
-}
-
-export function ChatInterface({ hiddenRecommendations = false }: ChatInterfaceProps) {
-    const { messages, handleUserMessage, isTyping, tripContext, view, isDemoMode, handleConfirmCategory } = useVAL8();
-    const [inputValue, setInputValue] = useState('');
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    // Check if we're loading recommendations
-    const isLoadingRecommendations = isTyping && view === 'recommendations';
-
-    // Auto-scroll to bottom
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, isTyping]);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (inputValue.trim()) {
-            handleUserMessage(inputValue);
-            setInputValue('');
-        }
-    };
-
-    return (
-        <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message) => (
-                    <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] ${message.role === 'user' ? 'order-1' : 'order-2'}`}>
-                            {message.role === 'assistant' && (
-                                <div className="flex items-start gap-2 mb-1">
-                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center flex-shrink-0">
-                                        <Sparkles className="w-3 h-3 text-white" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl rounded-tl-md px-4 py-3 text-[var(--foreground)] text-sm leading-relaxed whitespace-pre-line">
-                                            {message.content}
-                                        </div>
-
-                                        {/* Category Card (for demo mode) - shown inline in chat */}
-                                        {!hiddenRecommendations && message.categoryCard && (
-                                            <div className="mt-3">
-                                                <CategoryCard
-                                                    item={message.categoryCard}
-                                                    onConfirm={() => handleConfirmCategory(message.categoryCard!.category)}
-                                                />
-                                            </div>
-                                        )}
-
-                                        {/* Quick replies */}
-                                        {message.quickReplies && message.quickReplies.length > 0 && (
-                                            <QuickReplyChips options={message.quickReplies} />
-                                        )}
-
-                                        {/* Recommendations - hide when in split view */}
-                                        {!hiddenRecommendations && message.recommendations && message.recommendations.length > 0 && (
-                                            <div className="mt-3 space-y-3">
-                                                {message.recommendations.map((rec) => (
-                                                    <RecommendationCard key={rec.id} recommendation={rec} />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {message.role === 'user' && (
-                                <div className="bg-primary rounded-2xl rounded-tr-md px-4 py-3 text-white text-sm">
-                                    {message.content}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+  // Frame 4+: Chat Interface
+  return (
+    <div className="flex flex-col flex-1 h-full">
+      <div className="flex-1 px-8 pt-6 pb-2 overflow-y-auto no-scrollbar space-y-6">
+        {chatHistory.map((msg, i) => (
+          <motion.div
+            key={msg.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+          >
+            {msg.type === 'text' ? (
+              <div
+                className={`max-w-[85%] p-4 rounded-2xl ${msg.sender === 'user'
+                  ? 'bg-surface-alt dark:bg-white/10 text-text-primary dark:text-white rounded-tr-sm backdrop-blur-md border border-border-subtle dark:border-white/5'
+                  : 'bg-primary/10 text-text-primary dark:text-white rounded-tl-sm border border-primary/20'
+                  }`}
+              >
+                <p className="text-sm leading-relaxed font-light">{msg.text}</p>
+              </div>
+            ) : msg.type === 'options' ? (
+              <div key={msg.id} className="flex flex-wrap gap-2 mb-6 pl-4">
+                {msg.options?.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleQuickAction(option)}
+                    className="px-4 py-2 rounded-full bg-surface-alt dark:bg-white/5 border border-border-subtle dark:border-white/10 text-xs text-text-secondary dark:text-white/70 hover:bg-primary hover:text-surface hover:border-primary transition-all duration-300"
+                  >
+                    {option}
+                  </button>
                 ))}
-
-                {/* Typing indicator with shimmer cards */}
-                {isTyping && (
-                    <div className="flex items-start gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center flex-shrink-0">
-                            <Sparkles className="w-3 h-3 text-white" />
-                        </div>
-                        <div className="flex-1">
-                            <div className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl rounded-tl-md px-4 py-3 inline-block">
-                                <div className="flex gap-1">
-                                    <div className="w-2 h-2 bg-[var(--foreground)]/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                    <div className="w-2 h-2 bg-[var(--foreground)]/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                    <div className="w-2 h-2 bg-[var(--foreground)]/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                </div>
-                            </div>
-
-                            {/* Shimmer cards when loading recommendations */}
-                            {isLoadingRecommendations && (
-                                <div className="mt-3 space-y-3">
-                                    <ShimmerCard />
-                                    <ShimmerCard />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--glass-border)]">
-                <div className="relative">
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        placeholder={isDemoMode ? "Continue the conversation..." : "Type a message..."}
-                        className="w-full px-4 py-3 pr-24 rounded-xl bg-[var(--glass-button-bg)] border border-[var(--glass-border)] text-[var(--foreground)] placeholder-[var(--foreground)]/50 text-sm focus:outline-none focus:border-[var(--primary)]/50 transition-colors"
-                    />
-                    {/* Microphone icon for speech-to-speech */}
-                    <button
-                        type="button"
-                        className="absolute right-12 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-[var(--glass-button-bg)] border border-[var(--glass-border)] text-[var(--foreground)]/70 flex items-center justify-center hover:text-[var(--primary)] hover:border-[var(--primary)]/50 transition-all group"
-                        title="Voice input"
-                    >
-                        <Mic className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        {/* Subtle pulse indicator */}
-                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[var(--accent-alt)] rounded-full animate-pulse opacity-80" />
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={!inputValue.trim()}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <Send className="w-4 h-4" />
-                    </button>
+              </div>
+            ) : msg.type === 'card-stack' ? (
+              <div className="w-full">
+                <div className="text-text-secondary dark:text-white/80 border-l border-border-subtle dark:border-white/10 pl-4 p-4 text-sm font-light mb-2">
+                  {msg.text}
                 </div>
-            </form>
-        </div>
-    );
-}
+                {/* Render Carousel or Stack based on content preference */}
+                {(msg.type === 'card-stack' && msg.cards && (msg.cards[0]?.type === 'attraction' || msg.cards[0]?.type === 'event')) ? (
+                  <ChatCarousel
+                    cards={msg.cards}
+                    type={msg.cards[0]?.type as 'attraction' | 'event'}
+                    onSelect={handleHotelSelect}
+                  />
+                ) : (msg.type === 'card-stack' && msg.cards) ? (
+                  <CardStack cards={msg.cards} onSelect={handleHotelSelect} />
+                ) : null}
+
+                {/* Fallback for legacy messages using global cards state (if any) */}
+                {(msg.type === 'card-stack' && !msg.cards && i === chatHistory.length - 1) && (
+                  <CardStack cards={cards} onSelect={handleHotelSelect} onRemove={handleRemoveCard} />
+                )}
+              </div>
+            ) : null}
+          </motion.div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 bg-surface dark:glass-card border-x-0 border-b-0">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="relative"
+        >
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Tell me anything..."
+            className="w-full bg-surface-alt dark:bg-black/20 text-text-primary dark:text-white placeholder-text-muted dark:placeholder-white/30 rounded-xl pl-4 pr-20 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-border-subtle dark:border-white/5 transition-all"
+          />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <button
+              type="button"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted dark:text-white/40 hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Voice input"
+            >
+              <Mic className="w-4 h-4" />
+            </button>
+            <button
+              type="submit"
+              disabled={!inputValue.trim()}
+              className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-surface disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-soft transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};

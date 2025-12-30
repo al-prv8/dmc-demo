@@ -1,88 +1,93 @@
-# Privé International DMC Demo Instructions
+# Liberty International DMC Demo
 
-This project demonstrates the **Privé International** platform, specifically designed to showcase the "Bank of PRV8" concept to Destination Management Companies (DMCs).
+This demonstrates the **Liberty International** platform with PRV-8 AI concierge.
 
 ## 🚀 Quick Start
 
-1.  **Install Dependencies**
-    ```bash
-    npm install
-    ```
+```bash
+npm install
+npm run dev
+```
 
-2.  **Run Development Server**
-    ```bash
-    npm run dev
-    ```
-
-3.  **Open Demo**
-    Navigate to `http://localhost:3000` in your browser.
+Open `http://localhost:3000` and click **"Speak to Nora"** → **"Demo"** button.
 
 ---
 
-## 🎭 Demo Script Walkthrough
+## 🎭 Demo Conversation Script
 
-The demo follows a structured 6-step narrative designed to reassure DMCs that AI is an enabler, not a competitor.
+The demo follows a 6-step narrative for an Italy trip (Rome, Florence, Amalfi).
 
-### **Phase 1: The Client Experience**
+### Step 0 → 1: Complex Request
 
-**1. Entry Point**
-*   **Action**: Click the **Chatbot Avatar** (bottom right floating button).
-*   **State**: The chat window opens.
-*   **Narrative**: *"This immediately reassures them — the AI knows its place."*
-*   **Visual**: Initial greeting from the AI.
-
-**2. The Ask (Request)**
-*   **Action**: Click the **"Demo Step: ENTRY"** button (bottom of chat) OR type casually.
-*   **Effect**: Simulates user typing *"10 days in Italy for two couples — Rome, Florence, Amalfi."*
-*   **Narrative**: *"Their sweet spot: complex, multi-city, high-value requests."*
-
-**3. The Plan (Itinerary)**
-*   **Action**: Click **"Demo Step: REQUEST"**.
-*   **Effect**:
-    *   AI generates a structured response.
-    *   Window expands to show the **Visual Itinerary** on the right.
-    *   Timeline shows Rome, Florence, and Amalfi.
-*   **Narrative**: *"AI does NOT pretend to be the DMC — it drafts and defers."*
+| Role | Message |
+|------|---------|
+| **User** | "10 days in Italy for two couples — Rome, Florence, Amalfi." |
+| **AI** | "Perfect. I'll prepare a structured itinerary and coordinate execution with Liberty International's on-ground team." |
+| **Visual** | Calendar + Weather widgets appear |
 
 ---
 
-### **Phase 2: The Partner Experience (The "Aha!" Moment)**
+### Step 1 → 2: Routing Overview
 
-**4. The Partner Console**
-*   **Action**:
-    1.  Click **"Demo Step: ITINERARY"**.
-    2.  Locate the toggle in the top-right corner of the expanded window.
-    3.  Switch from **"Client View"** to **"Partner View"**.
-*   **Effect**: The visual itinerary flips to the **Privé International Partner Console**.
-*   **Key Features to Highlight**:
-    *   **"Verified Intent"** badge.
-    *   **"Qualified Client"** details (Tier, Budget $45k-$60k).
-    *   **"Margin Band"** (Protected 18-22%).
-    *   **"Operator Notes"**: Structured data for the DMC.
-*   **Narrative**: *"This is KEY — show them the Partner View toggle. PRV-8 feeds Privé structured, qualified intent — not random requests."*
+| Role | Message |
+|------|---------|
+| **User** | "What does the routing look like?" |
+| **AI** | "This draft optimizes routing and flow: 3 nights Rome, 3 nights Florence, 4 nights Amalfi. Liberty International will finalize guides, access, and experiences." |
+| **Visual** | Draft Itinerary card shows routing |
 
-**5. AI Logic & Refinement**
-*   **Action**: Click **"Demo Step: CONSOLE"**.
-*   **Effect**:
-    *   AI suggests: *"Privé International recommends adjusting the Amalfi segment to avoid peak congestion."*
-    *   In Partner View, a warning appears: *"AI Suggestion: Amalfi peak congestion warning."*
-*   **Narrative**: *"This shows respect for operator expertise."*
+---
 
-**6. Closing the Loop**
-*   **Action**: Click **"Demo Step: REFINEMENT"**.
-*   **Effect**: User accepts the change. AI confirms: *"Privé International will manage your journey end-to-end."*
-*   **Narrative**: *"Ongoing relationship: preferences retained for future trips."*
+### Step 2 → 3: Hotel Selection
+
+| Role | Message |
+|------|---------|
+| **User** | "Can you show me hotels?" |
+| **AI** | "I've curated luxury properties for each city. Hotel de Russie in Rome, Four Seasons Firenze in Florence, and Belmond Caruso on the Amalfi Coast. Shall I proceed?" |
+| **Visual** | Hotel widget appears (Hotel de Russie) |
+
+---
+
+### Step 3 → 4: DMC Recommendation
+
+| Role | Message |
+|------|---------|
+| **User** | "Yes, proceed." |
+| **AI** | "Rooms held. Liberty International has noted a recommendation: adjusting the Amalfi segment to avoid peak congestion in early June. Shall I apply this update?" |
+| **Visual** | — |
+
+> **Key moment**: Shows respect for DMC operator expertise
+
+---
+
+### Step 4 → 5: Transfers & Experiences
+
+| Role | Message |
+|------|---------|
+| **User** | "Yes, apply it." |
+| **AI** | "Updated. I've also arranged private transfers between cities and a vintage Fiat 500 tour in Tuscany. Liberty International will manage all logistics." |
+| **Visual** | Transfers widget + Fiat 500 Experience card appear |
+
+---
+
+### Step 5 → 6: Confirmation
+
+| Role | Message |
+|------|---------|
+| **User** | "This looks great." |
+| **AI** | "Liberty International will manage your journey end-to-end. I'll retain your preferences for future trips. Ready for confirmation?" |
+| **Visual** | Checkout widget appears |
 
 ---
 
 ## 💡 Key Talking Points
 
-*   **You don't replace them**: The AI handles the "chore" of initial data gathering.
-*   **You don't commoditize them**: We protect their margins and highlight their value.
-*   **Better Clients**: We send "Qualified Demand" (high budget, serious intent), not tire-kickers.
-*   **Scale**: This allows DMCs to handle more volume without adding more staff for basic inquiries.
+- **AI drafts, DMC finalizes** — We don't pretend to be the operator
+- **Protected margins** — DMCs keep their value
+- **Qualified demand** — High-budget, serious travelers only
+- **Scalable relationships** — Handle more volume without more staff
 
-## 🛠️ Configuration
+## 🏷️ Branding
 
-*   **Branding**: The site is fully branded as **Privé International**.
-*   **Powered By**: The chatbot is labeled as **"Powered by PRV8"**.
+- **Website**: Liberty International | Luxury Travel Concierge
+- **Chatbot**: "Speak to Nora" — Powered by PRV8
+- **Theme**: Orange accents (`#f97316`)

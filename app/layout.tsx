@@ -4,16 +4,17 @@ import { Inter, JetBrains_Mono, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemePresetProvider } from "@/context/ThemeContext";
-import { VAL8Provider } from "@/context/VAL8Context";
-import { VAL8Widget } from "@/components/val8/VAL8Widget";
+import { AuthProvider } from "@/context/AuthContext";
+import { Val8Provider } from "@/components/val8/Val8Context";
+import { Val8Widget } from "@/components/val8/Val8Widget";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 const greatVibes = Great_Vibes({ weight: "400", subsets: ["latin"], variable: "--font-great-vibes" });
 
 export const metadata: Metadata = {
-  title: "Bank of PRV8 | PRV8 International",
-  description: "The largest privately owned Destination Management Company (DMC)",
+  title: "Liberty International | Luxury Travel Concierge",
+  description: "DMC Partner - Powered by Liberty International Tourism Group",
 };
 
 export default function RootLayout({
@@ -31,10 +32,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ThemePresetProvider>
-            <VAL8Provider>
-              {children}
-              <VAL8Widget />
-            </VAL8Provider>
+            <AuthProvider>
+              <Val8Provider>
+                {children}
+                <Val8Widget />
+              </Val8Provider>
+            </AuthProvider>
           </ThemePresetProvider>
         </ThemeProvider>
       </body>
